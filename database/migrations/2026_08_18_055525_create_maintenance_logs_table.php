@@ -13,8 +13,9 @@ return new class extends Migration {
         Schema::create('maintenance_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('asset_id')->constrained()->onDelete('cascade');
+            $table->string('type')->default('Routine Checkup');
             $table->date('service_date');
-            $table->date('next_service_date');
+            $table->date('next_service_date')->nullable();
             $table->decimal('cost', 15, 2)->default(0);
             $table->text('notes')->nullable();
             $table->string('proof_file')->nullable(); // Upload nota/resi

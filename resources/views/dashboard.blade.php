@@ -86,7 +86,8 @@
 
                             <div class="mt-6 pt-4 border-t border-gray-700/50 flex justify-between items-center">
                                 <span class="text-xs text-gray-500">Klik untuk kelola kategori</span>
-                                <a href="#" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300">Buka
+                                <a href="{{ route('properties.show', $property->id) }}"
+                                    class="text-xs font-semibold text-indigo-400 hover:text-indigo-300">Buka
                                     Properti &rarr;</a>
                             </div>
                         </div>

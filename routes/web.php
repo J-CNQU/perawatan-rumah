@@ -12,6 +12,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [PropertyController::class, 'index'])->name('dashboard');
 
+    Route::get('/properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
+    Route::post('/properties/{property}/assets', [PropertyController::class, 'storeAsset'])->name('properties.assets.store');
+    Route::put('/properties/{property}/assets/{asset}', [PropertyController::class, 'updateAsset'])->name('properties.assets.update');
+    Route::delete('/properties/{property}/assets/{asset}', [PropertyController::class, 'destroyAsset'])->name('properties.assets.destroy');
+    Route::post('/properties/{property}/maintenance-logs', [PropertyController::class, 'storeMaintenanceLog'])->name('properties.maintenance_logs.store');
+    Route::put('/properties/{property}/maintenance-logs/{maintenanceLog}', [PropertyController::class, 'updateMaintenanceLog'])->name('properties.maintenance_logs.update');
+    Route::delete('/properties/{property}/maintenance-logs/{maintenanceLog}', [PropertyController::class, 'destroyMaintenanceLog'])->name('properties.maintenance_logs.destroy');
     Route::post('/properties', [PropertyController::class, 'store'])->name('properties.store');
 });
 
