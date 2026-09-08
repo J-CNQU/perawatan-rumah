@@ -20,7 +20,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'monthly_income', // Jika kolom ini sudah ditambahkan
+        'monthly_salary',
+        'maintenance_budget_percentage',
         'phone_number',
     ];
 

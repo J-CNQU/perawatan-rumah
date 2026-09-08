@@ -20,7 +20,7 @@ class PropertyController extends Controller
     public function show(Property $property)
     {
         $property = auth()->user()->properties()
-            ->with(['assets.maintenanceLogs' => function ($query) {
+            ->with(['assets.category', 'assets.maintenanceLogs' => function ($query) {
                 $query->latest('service_date');
             }])
             ->findOrFail($property->id);
@@ -28,7 +28,54 @@ class PropertyController extends Controller
         $totalMaintenanceCost = $property->assets
             ->sum(fn ($asset) => $asset->maintenanceLogs->sum('cost'));
 
-        return view('properties.show', compact('property', 'totalMaintenanceCost'));
+        $totalAssets = $property->assets->count();
+        $healthyAssets = $property->assets->where('condition', 'Normal')->count();
+        $healthScore = $totalAssets > 0 ? round(($healthyAssets / $totalAssets) * 100) : 100;
+
+        $upcomingReminders = [];
+
+        foreach ($property->assets as $asset) {
+            $latestLog = $asset->maintenanceLogs->sortByDesc('service_date')->first();
+            $baseDate = $latestLog?->service_date
+                ? $latestLog->service_date
+                : ($asset->purchase_date ?? now()->toDateString());
+
+            $intervalMonths = max((int) ($asset->maintenance_interval_months ?? 3), 1);
+            $nextServiceDate = \Carbon\Carbon::parse($baseDate)->addMonths($intervalMonths);
+            $daysUntilService = now()->diffInDays($nextServiceDate, false);
+            $isDue = $daysUntilService <= 30 && $daysUntilService >= -30;
+
+            if ($isDue) {
+                $upcomingReminders[] = [
+                    'asset' => $asset,
+                    'next_service_date' => $nextServiceDate,
+                    'days_until_service' => $daysUntilService,
+                    'status' => $daysUntilService < 0 ? 'Terlewat' : 'Mendekati',
+                ];
+            }
+        }
+
+        usort($upcomingReminders, fn ($a, $b) => $a['next_service_date'] <=> $b['next_service_date']);
+
+        return view('properties.show', compact('property', 'totalMaintenanceCost', 'healthScore', 'upcomingReminders'));
+    }
+
+    public function exportPdf(Property $property)
+    {
+        $property = auth()->user()->properties()
+            ->with(['assets.category', 'assets.maintenanceLogs' => function ($query) {
+                $query->latest('service_date');
+            }])
+            ->findOrFail($property->id);
+
+        $totalMaintenanceCost = $property->assets
+            ->sum(fn ($asset) => $asset->maintenanceLogs->sum('cost'));
+
+        $healthScore = $property->assets->count() > 0
+            ? round(($property->assets->where('condition', 'Normal')->count() / $property->assets->count()) * 100)
+            : 100;
+
+        return view('properties.pdf', compact('property', 'totalMaintenanceCost', 'healthScore'));
     }
 
     public function storeAsset(Request $request, Property $property)

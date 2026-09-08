@@ -10,22 +10,36 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <a href="{{ route('dashboard') }}"
-                        class="inline-flex items-center text-sm text-indigo-400 hover:text-indigo-300 mb-3">
-                        &larr; Kembali ke Dashboard
-                    </a>
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-indigo-400 hover:text-indigo-300 mb-3">&larr; Kembali ke Dashboard</a>
                     <h1 class="text-3xl font-bold text-white">{{ $property->name }}</h1>
                     <p class="text-gray-400 mt-1">{{ $property->type }} · {{ $property->address ?? 'Alamat belum diisi' }}</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button type="button" @click="assetModal = true"
-                        class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/25">
-                        + Tambah Aset
-                    </button>
-                    <button type="button" @click="logModal = true"
-                        class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2.5 rounded-xl border border-gray-600">
-                        + Tambah Log
-                    </button>
+                    <a href="{{ route('properties.export-pdf', $property) }}" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-600/25">Cetak Laporan / PDF</a>
+                    <button type="button" @click="assetModal = true" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/25">+ Tambah Aset</button>
+                    <button type="button" @click="logModal = true" class="bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2.5 rounded-xl border border-gray-600">+ Tambah Log</button>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.2em] text-gray-400">Health Score</p>
+                        <h2 class="text-xl font-bold text-white mt-2">Kesehatan Properti</h2>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                        @if($healthScore >= 80) bg-emerald-500/10 text-emerald-300 border border-emerald-500/20
+                        @elseif($healthScore >= 50) bg-yellow-500/10 text-yellow-300 border border-yellow-500/20
+                        @else bg-red-500/10 text-red-300 border border-red-500/20 @endif">
+                        {{ $healthScore }}%
+                    </span>
+                </div>
+                <div class="mt-4 w-full h-3 rounded-full bg-gray-700 overflow-hidden">
+                    <div class="h-full rounded-full
+                        @if($healthScore >= 80) bg-emerald-500
+                        @elseif($healthScore >= 50) bg-yellow-400
+                        @else bg-red-500 @endif"
+                        style="width: {{ $healthScore }}%"></div>
                 </div>
             </div>
 
@@ -53,6 +67,7 @@
                                             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Kategori</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Status</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Pembelian</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Garansi</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">Aksi</th>
                                         </tr>
                                     </thead>
@@ -79,6 +94,20 @@
                                                     {{ $asset->purchase_date ? \Carbon\Carbon::parse($asset->purchase_date)->translatedFormat('d M Y') : '—' }}
                                                     @if(!empty($asset->purchase_price))
                                                         <span class="block text-xs text-gray-400">Rp {{ number_format($asset->purchase_price, 0, ',', '.') }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    @if(!empty($asset->warranty_expiration))
+                                                        @php
+                                                            $warrantyActive = \Carbon\Carbon::parse($asset->warranty_expiration)->isFuture() || \Carbon\Carbon::parse($asset->warranty_expiration)->isToday();
+                                                        @endphp
+                                                        <span class="inline-flex rounded-full border px-2.5 py-1 text-[10px] font-medium
+                                                            @if($warrantyActive) bg-emerald-500/10 text-emerald-300 border-emerald-500/20
+                                                            @else bg-gray-500/10 text-gray-300 border-gray-500/20 @endif">
+                                                            {{ $warrantyActive ? 'Garansi Aktif' : 'Garansi Habis' }}
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex rounded-full border border-gray-600 bg-gray-500/10 text-gray-300 px-2.5 py-1 text-[10px] font-medium">Tanpa Garansi</span>
                                                     @endif
                                                 </td>
                                                 <td class="px-4 py-3">
@@ -169,6 +198,37 @@
                                 </span>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">
+                        <p class="text-xs uppercase tracking-[0.2em] text-gray-400">Pengingat Perawatan Mendatang</p>
+                        @if(empty($upcomingReminders))
+                            <p class="mt-4 text-sm text-gray-400">Tidak ada servis yang segera dibutuhkan untuk aset di properti ini.</p>
+                        @else
+                            <div class="mt-4 space-y-3">
+                                @foreach($upcomingReminders as $reminder)
+                                    @php
+                                        $asset = $reminder['asset'];
+                                        $days = $reminder['days_until_service'];
+                                        $isExpired = $days < 0;
+                                    @endphp
+                                    <div class="rounded-xl border border-gray-700 bg-gray-900/60 p-3">
+                                        <div class="flex justify-between items-center gap-3">
+                                            <p class="font-medium text-white">{{ $asset->name }}</p>
+                                            <span class="inline-flex rounded-full border px-2 py-1 text-[10px] font-medium
+                                                @if($isExpired) bg-gray-500/10 text-gray-300 border-gray-500/20
+                                                @else bg-indigo-500/10 text-indigo-300 border-indigo-500/20 @endif">
+                                                {{ $isExpired ? 'Terlambat' : 'Mendekati' }}
+                                            </span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-400">
+                                            Tanggal servis berikutnya: {{ \Carbon\Carbon::parse($reminder['next_service_date'])->translatedFormat('d M Y') }}
+                                            <span class="text-gray-300">({{ abs($days) }} hari {{ $isExpired ? 'terlambat' : 'tersisa' }})</span>
+                                        </p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
                     <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6">

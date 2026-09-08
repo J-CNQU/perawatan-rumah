@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyController;
 use Illuminate\Support\Facades\Route;
@@ -10,9 +11,11 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/dashboard', [PropertyController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/financials/update', [DashboardController::class, 'updateFinancials'])->name('financials.update');
 
     Route::get('/properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
+    Route::get('/properties/{property}/export-pdf', [PropertyController::class, 'exportPdf'])->name('properties.export-pdf');
     Route::post('/properties/{property}/assets', [PropertyController::class, 'storeAsset'])->name('properties.assets.store');
     Route::put('/properties/{property}/assets/{asset}', [PropertyController::class, 'updateAsset'])->name('properties.assets.update');
     Route::delete('/properties/{property}/assets/{asset}', [PropertyController::class, 'destroyAsset'])->name('properties.assets.destroy');

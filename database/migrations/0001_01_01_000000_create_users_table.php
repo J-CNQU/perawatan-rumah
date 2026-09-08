@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->decimal('monthly_income', 15, 2)->default(0); // Kolom tambahan kamu ditaruh di sini
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
