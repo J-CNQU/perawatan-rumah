@@ -7,6 +7,10 @@
         assetForm: { id: '', name: '', category: '', condition: 'Normal', purchase_date: '', purchase_price: '', description: '' },
         logForm: { id: '', type: 'Routine Checkup', service_date: '', cost: '', notes: '' }
     }" class="min-h-screen bg-gray-900 text-gray-100 py-8">
+      <div class="flex items-center justify-between mb-6">
+            <div class="absolute top-2 left-0">
+                <img src="{{ asset('images/logo_rumah.png') }}" alt="Logo" class="h-20 w-auto">
+            </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="flex items-center justify-between gap-4">
                 <div>

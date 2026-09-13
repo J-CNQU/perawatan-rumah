@@ -1,11 +1,18 @@
 <x-app-layout>
+    
     <div x-data="{ openModal: false, financeModal: false }" class="py-8 bg-gray-900 text-gray-100 min-h-screen">
+        <div class="flex items-center justify-between mb-6">
+            <div class="absolute top-2 left-0">
+                <img src="images/logo_rumah.png" alt="Logo" class="h-20 w-auto">
+            </div>
+        </div>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center space-x-4">
                     <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center font-bold text-2xl text-white shadow-lg">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
+                
                     <div>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
@@ -52,7 +59,7 @@
                             {{ $financialStatus }}
                         </span>
                     </div>
-
+                
                     <div class="mb-3 flex items-center justify-between text-sm text-gray-300">
                         <span>Biaya bulan ini</span>
                         <strong>Rp {{ number_format($currentMonthExpenses ?? 0, 0, ',', '.') }}</strong>
